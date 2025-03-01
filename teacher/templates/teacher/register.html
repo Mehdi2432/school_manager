@@ -1,0 +1,218 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>ثبت‌نام - سامانه مدرسه آسا</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: auto;
+        }
+        .register-container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2.5em;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 600px;
+            text-align: right;
+            position: relative;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        .header h1 {
+            color: #1e3c72;
+            font-size: 2em;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2em; /* فاصله یکسان برای همه */
+            padding: 0 1em;
+        }
+        .full-width {
+            grid-column: span 2;
+        }
+        .register-form label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #333;
+            font-weight: bold;
+        }
+        .register-form input, .register-form select {
+            width: 100%;
+            padding: 0.9em;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Vazir', sans-serif;
+            background: #f9f9f9;
+            transition: border 0.3s;
+        }
+        .register-form input:focus {
+            border-color: #1e3c72;
+            outline: none;
+        }
+        .register-form button {
+            width: 100%;
+            padding: 1em;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            font-size: 1em;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .register-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .license-section {
+            margin-top: 0.5em; /* فاصله یکسان با بقیه */
+            border-top: 1px solid #ddd;
+            padding-top: 1em;
+        }
+        .error, .message {
+            color: red;
+            text-align: center;
+            margin-bottom: 1em;
+            font-size: 0.9em;
+        }
+        .message.success {
+            color: green;
+        }
+        .success-box {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+            padding: 1.5em;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 1em;
+        }
+        .success-box p {
+            color: #4caf50;
+            font-size: 1.2em;
+            margin: 0 0 1em 0;
+        }
+        .success-box a {
+            display: inline-block;
+            padding: 0.8em 2em;
+            background: #4caf50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-family: 'Vazir', sans-serif;
+            transition: background 0.3s;
+        }
+        .success-box a:hover {
+            background: #388e3c;
+        }
+        .footer {
+            position: fixed;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #fff;
+            font-size: 0.9em;
+            z-index: 2;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            background: rgba(0, 0, 0, 0.0);
+            border-radius: 3px;
+            width: fit-content;
+            margin: 0 auto;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+</head>
+<body>
+    <div class="register-container">
+        <div class="header">
+            <h1>ثبت‌نام در مدرسه آسا</h1>
+        </div>
+        {% if success %}
+        <div class="success-box">
+            <p>ثبت‌نام شما با موفقیت انجام شد!</p>
+            <a href="{% url 'unified_login' %}">ورود</a>
+        </div>
+        {% else %}
+        <form class="register-form" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="hidden" name="form_type" value="register">
+            <div class="form-grid">
+                <div>
+                    <label for="first_name">نام <span style="color: red;">*</span></label>
+                    <input type="text" id="first_name" name="first_name" required>
+                </div>
+                <div>
+                    <label for="last_name">نام خانوادگی</label>
+                    <input type="text" id="last_name" name="last_name">
+                </div>
+                <div>
+                    <label for="phone_number">شماره موبایل <span style="color: red;">*</span></label>
+                    <input type="text" id="phone_number" name="phone_number" required>
+                </div>
+                <div>
+                    <label for="username">نام کاربری <span style="color: red;">*</span></label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div>
+                    <label for="password">رمز عبور <span style="color: red;">*</span></label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div>
+                    <label for="password_confirm">تکرار رمز <span style="color: red;">*</span></label>
+                    <input type="password" id="password_confirm" name="password_confirm" required>
+                </div>
+                <div class="full-width">
+                    <label for="role">نقش <span style="color: red;">*</span></label>
+                    <select id="role" name="role" required>
+                        <option value="school">مدرسه</option>
+                        <option value="teacher">معلم</option>
+                        <option value="parent">والدین</option>
+                        <option value="student">دانش‌آموز</option>
+                    </select>
+                </div>
+                <div class="full-width license-section">
+                    <label for="license_file">بارگذاری لایسنس</label>
+                    <input type="file" id="license_file" name="license_file">
+                </div>
+                <div class="full-width">
+                    <button type="submit" name="submit_type" value="license">ثبت لایسنس</button>
+                </div>
+                <div class="full-width">
+                    <button type="submit" name="submit_type" value="register">ثبت‌نام</button>
+                </div>
+            </div>
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+            {% if message %}
+            <div class="message {% if message.success %}success{% endif %}">{{ message.text }}</div>
+            {% endif %}
+        </form>
+        {% endif %}
+    </div>
+    <div class="footer">
+        <p>تمامی حقوق برای شرکت ایمن آسا محفوظ است © ۱۴۰۳</p>
+    </div>
+</body>
+</html>

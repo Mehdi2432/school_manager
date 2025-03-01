@@ -1,0 +1,362 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>کلاس‌های من</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #f4f6f9, #e9ecef);
+            min-height: 100vh;
+        }
+        .classes-container {
+            background: white;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 2em auto;
+            text-align: right;
+            position: relative;
+        }
+        .header h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            color: #007bff;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        .back-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate; /* جدا کردن برای گرد شدن گوشه‌ها */
+            border-spacing: 0; /* فاصله بین سلول‌ها صفر بمونه */
+            background: white;
+            border-radius: 10px; /* گرد کردن گوشه‌ها */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2em;
+            overflow: hidden; /* مطمئن شدن که گوشه‌ها تمیز باشن */
+        }
+        th, td {
+            padding: 0.8em;
+            border: 1px solid #ddd;
+            text-align: right;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        th:first-child {
+            border-top-right-radius: 10px; /* گوشه بالا راست */
+        }
+        th:last-child {
+            border-top-left-radius: 10px; /* گوشه بالا چپ */
+        }
+        tr:last-child td:first-child {
+            border-bottom-right-radius: 10px; /* گوشه پایین راست */
+        }
+        tr:last-child td:last-child {
+            border-bottom-left-radius: 10px; /* گوشه پایین چپ */
+        }
+        td input {
+            width: 100%;
+            padding: 0.3em;
+            border: none;
+            background: transparent;
+            font-family: 'Vazir', sans-serif;
+        }
+        td input:disabled {
+            color: #333;
+        }
+        td select {
+            width: 100%;
+            padding: 0.3em;
+            border: none;
+            background: transparent;
+            font-family: 'Vazir', sans-serif;
+        }
+        .actions button {
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            margin-left: 0.5em;
+        }
+        .edit {
+            background: #28a745;
+            color: white;
+        }
+        .edit:hover {
+            background: #218838;
+        }
+        .save {
+            background: #007bff;
+            color: white;
+            display: none;
+        }
+        .save:hover {
+            background: #0056b3;
+        }
+        .delete {
+            background: #dc3545;
+            color: white;
+        }
+        .delete:hover {
+            background: #c82333;
+        }
+        .add-form {
+            padding: 1.5em;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1.5em;
+            align-items: center;
+        }
+        label {
+            color: #333;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.6em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Vazir', sans-serif;
+        }
+        button[type="submit"] {
+            padding: 0.6em 1.5em;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            width: 100%;
+        }
+        button[type="submit"]:hover {
+            background: #0056b3;
+        }
+        .message, .error {
+            text-align: center;
+            margin-top: 1em;
+            font-family: 'Vazir', sans-serif;
+        }
+        .message { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="classes-container">
+        <a href="{% url 'teacher_dashboard' %}" class="back-btn"><i class="fas fa-arrow-right"></i> بازگشت به داشبورد</a>
+        <div class="header">
+            <h1>کلاس‌های من</h1>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>نام کلاس</th>
+                    <th>درس</th>
+                    <th>پایه</th>
+                    <th>مدرسه</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody id="class-list">
+                {% for class in classes %}
+                <tr data-id="{{ class.id }}">
+                    <td><input type="text" value="{{ class.name|persian_numbers }}" disabled></td>
+                    <td><input type="text" value="{{ class.subject|persian_numbers }}" disabled></td>
+                    <td><input type="text" value="{{ class.grade|persian_numbers }}" disabled></td>
+                    <td>
+                        <select disabled>
+                            <option value="{{ class.school.id }}" selected>{{ class.school.name|persian_numbers }}</option>
+                            {% for school in schools %}
+                                {% if school.id != class.school.id %}
+                                <option value="{{ school.id }}">{{ school.name|persian_numbers }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="actions">
+                        <button class="edit">ویرایش</button>
+                        <button class="save">ذخیره</button>
+                        <button class="delete">حذف</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">کلاسی ثبت نشده است.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-form">
+            <form id="add-class-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_class">
+                <div class="form-grid">
+                    <div>
+                        <label>نام کلاس</label>
+                        <input type="text" name="name" required>
+                    </div>
+                    <div>
+                        <label>درس</label>
+                        <input type="text" name="subject" required>
+                    </div>
+                    <div>
+                        <label>پایه</label>
+                        <input type="text" name="grade" required>
+                    </div>
+                    <div>
+                        <label>مدرسه</label>
+                        <select name="school" required>
+                            {% for school in schools %}
+                            <option value="{{ school.id }}">{{ school.name|persian_numbers }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label> </label>
+                        <button type="submit">ثبت کلاس</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="message" class="message"></div>
+        <div id="error" class="error"></div>
+    </div>
+    <script>
+        function toPersianNumbers(str) {
+            var persianNumbers = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return str.replace(/[0-9]/g, function(w) {
+                return persianNumbers[+w];
+            });
+        }
+
+        $(document).ready(function() {
+            $('#add-class-form').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '{% url "my_classes" %}',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#class-list').append(`
+                                <tr data-id="${response.id}">
+                                    <td><input type="text" value="${toPersianNumbers(response.name)}" disabled></td>
+                                    <td><input type="text" value="${toPersianNumbers(response.subject)}" disabled></td>
+                                    <td><input type="text" value="${toPersianNumbers(response.grade)}" disabled></td>
+                                    <td><select disabled>
+                                        <option value="${response.school}" selected>${toPersianNumbers(response.school)}</option>
+                                    </select></td>
+                                    <td class="actions">
+                                        <button class="edit">ویرایش</button>
+                                        <button class="save" style="display:none;">ذخیره</button>
+                                        <button class="delete">حذف</button>
+                                    </td>
+                                </tr>
+                            `);
+                            $('#add-class-form')[0].reset();
+                            $('#message').text('کلاس با موفقیت اضافه شد').show().fadeOut(3000);
+                        } else {
+                            $('#error').text(response.error).show().fadeOut(3000);
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit', function() {
+                let row = $(this).closest('tr');
+                row.find('input, select').prop('disabled', false);
+                $(this).hide();
+                row.find('.save').show();
+            });
+
+            $(document).on('click', '.save', function() {
+                let row = $(this).closest('tr');
+                let class_id = row.data('id');
+                let name = row.find('input:eq(0)').val();
+                let subject = row.find('input:eq(1)').val();
+                let grade = row.find('input:eq(2)').val();
+                let school = row.find('select').val();
+
+                $.ajax({
+                    url: '{% url "my_classes" %}',
+                    method: 'POST',
+                    data: {
+                        action: 'edit_class',
+                        class_id: class_id,
+                        name: name,
+                        subject: subject,
+                        grade: grade,
+                        school: school,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            row.find('input:eq(0)').val(toPersianNumbers(name));
+                            row.find('input:eq(1)').val(toPersianNumbers(subject));
+                            row.find('input:eq(2)').val(toPersianNumbers(grade));
+                            row.find('input, select').prop('disabled', true);
+                            row.find('.save').hide();
+                            row.find('.edit').show();
+                            $('#message').text('کلاس با موفقیت ویرایش شد').show().fadeOut(3000);
+                        } else {
+                            $('#error').text(response.error).show().fadeOut(3000);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $('#error').text('خطایی رخ داد. لطفاً دوباره تلاش کنید.').show().fadeOut(3000);
+                    }
+                });
+            });
+
+            $(document).on('click', '.delete', function() {
+                if (confirm('مطمئن هستید که می‌خواهید این کلاس را حذف کنید؟')) {
+                    let row = $(this).closest('tr');
+                    let class_id = row.data('id');
+                    $.ajax({
+                        url: '{% url "my_classes" %}',
+                        method: 'POST',
+                        data: {
+                            action: 'delete_class',
+                            class_id: class_id,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                row.remove();
+                                $('#message').text('کلاس با موفقیت حذف شد').show().fadeOut(3000);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

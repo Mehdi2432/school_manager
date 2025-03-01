@@ -1,0 +1,657 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>مدیریت کلاس - {{ class_obj.name }} - {{ class_obj.subject }} - {{ class_obj.grade|persian_numbers }}</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(to right, #f0f2f5, #e9ecef);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 1100px;
+            margin: 20px auto;
+            position: relative;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h1 {
+            color: #1e90ff;
+            margin: 0;
+            font-size: 24px;
+            font-family: 'Vazir', sans-serif;
+        }
+        .session-info {
+            color: #333;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #1e90ff;
+            text-decoration: none;
+            padding: 6px 12px;
+            border: 2px solid #1e90ff;
+            border-radius: 6px;
+            font-family: 'Vazir', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .back-btn:hover {
+            background: #1e90ff;
+            color: white;
+        }
+        .tab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            color: #1e90ff;
+            border: none;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            transition: all 0.3s ease;
+        }
+        .tab.active {
+            background: #1e90ff;
+            color: white;
+        }
+        .tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .class-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            font-family: 'Vazir', sans-serif;
+        }
+        th {
+            background: #1e90ff;
+            color: white;
+            font-weight: 600;
+        }
+        .attendance-cell {
+            cursor: pointer;
+        }
+        .attendance-icon {
+            font-size: 1.2em;
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            transition: color 0.3s ease;
+        }
+        .attendance-icon.present { color: #2ecc71; }
+        .attendance-icon.absent { color: #e74c3c; }
+        .grade-input {
+            width: 50px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Vazir', sans-serif;
+            direction: ltr;
+            text-align: center;
+        }
+        .discipline-select, .activity-select {
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-family: 'Vazir', sans-serif;
+            background: white;
+        }
+        .discipline-select option[value="positive"]:hover { background: #2ecc71; color: white; }
+        .discipline-select option[value="negative"]:hover { background: #e74c3c; color: white; }
+        .session-button {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            transition: background 0.3s ease;
+        }
+        .session-button:hover {
+            background: #218838;
+        }
+        .message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: 'Vazir', sans-serif;
+            z-index: 1000;
+            display: none;
+        }
+        .settings-table {
+            width: 300px;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            margin: 15px auto;
+        }
+        .settings-table th, .settings-table td {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+            font-size: 14px;
+        }
+        .settings-table th {
+            background: #1e90ff;
+            color: white;
+            font-weight: 600;
+        }
+        .settings-table input {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            direction: ltr;
+            text-align: center;
+            font-size: 14px;
+        }
+        .highlight {
+            background: #fff3cd;
+            color: #856404;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 12px;
+            display: block;
+            margin-top: 2px;
+        }
+        .activity-row td {
+            padding: 6px;
+        }
+        .activity-row input {
+            width: 100%;
+            margin: 0;
+        }
+        .remove-activity {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .remove-activity:hover {
+            background: #c0392b;
+        }
+        .settings-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>مدیریت کلاس - {{ class_obj.name }} - {{ class_obj.subject }} - {{ class_obj.grade|persian_numbers }}</h1>
+            <div class="session-info">{{ current_date|persian_numbers }} - جلسه {{ session.session_number|persian_numbers }}</div>
+        </div>
+        <a href="{% url 'teacher_dashboard' %}" class="back-btn">↷ بازگشت به داشبورد</a>
+        <div class="tab-bar">
+            <button class="tab active" data-tab="students-tab">دانش‌آموزان</button>
+            <button class="tab" data-tab="attendance-tab">حضور و غیاب</button>
+            <button class="tab" data-tab="grades-tab">نمرات</button>
+            <button class="tab" data-tab="activities-tab">فعالیت‌ها</button>
+            <button class="tab" data-tab="feedback-tab">بازخوردها</button>
+            <button class="tab" data-tab="settings-tab">تعریف مقادیر</button>
+        </div>
+        <div class="tab-content active" id="students-tab">
+            <table class="class-table">
+                <thead>
+                    <tr>
+                        <th>نام خانوادگی</th>
+                        <th>نام</th>
+                        <th>حضور و غیاب</th>
+                        <th>نمره روزانه</th>
+                        <th>موارد انضباطی</th>
+                        <th>فعالیت کلاسی</th>
+                    </tr>
+                </thead>
+                <tbody id="student-list">
+                    {% for student_session in student_sessions %}
+                    <tr data-id="{{ student_session.student.id }}" data-name="{{ student_session.student.name }}">
+                        <td>{{ student_session.student.name.split|last }}</td>
+                        <td>{{ student_session.student.name.split|first }}</td>
+                        <td class="attendance-cell">
+                            <span class="attendance-icon {% if student_session.attendance %}present{% else %}absent{% endif %}" data-present="{{ student_session.attendance|lower }}">
+                                {% if student_session.attendance %}✓{% else %}✗{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <input type="text" class="grade-input" maxlength="5" value="{% if student_session.daily_grade %}{{ student_session.daily_grade|persian_numbers }}{% endif %}" data-original="{% if student_session.daily_grade %}{{ student_session.daily_grade|persian_numbers }}{% endif %}">
+                        </td>
+                        <td>
+                            <select class="discipline-select" data-original="{{ student_session.discipline|default:'' }}">
+                                <option value="" {% if not student_session.discipline %}selected{% endif %}>-</option>
+                                <option value="positive" {% if student_session.discipline == 'positive' %}selected{% endif %}>مثبت</option>
+                                <option value="negative" {% if student_session.discipline == 'negative' %}selected{% endif %}>منفی</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select class="activity-select" data-original="{{ student_session.activity.id|default:'' }}">
+                                <option value="" {% if not student_session.activity %}selected{% endif %}>-</option>
+                                {% for activity in activities %}
+                                <option value="{{ activity.id }}" {% if student_session.activity.id == activity.id %}selected{% endif %}>{{ activity.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="6">دانش‌آموزی ثبت نشده است.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="session-button" data-class-id="{{ class_obj.id }}">ثبت جلسه</button>
+            </div>
+        </div>
+        <div class="tab-content" id="attendance-tab">
+            <p>تقویم حضور و غیاب در حال توسعه است...</p>
+        </div>
+        <div class="tab-content" id="grades-tab">
+            <p>نمرات در حال توسعه است...</p>
+        </div>
+        <div class="tab-content" id="activities-tab">
+            <p>فعالیت‌ها در حال توسعه است...</p>
+        </div>
+        <div class="tab-content" id="feedback-tab">
+            <p>بازخوردها در حال توسعه است...</p>
+        </div>
+        <div class="tab-content" id="settings-tab">
+            <h3 style="text-align: center; margin-bottom: 15px;">تعریف مقادیر</h3>
+            <form id="settings-form">
+                <table class="settings-table">
+                    <thead>
+                        <tr>
+                            <th colspan="2">نمره روزانه</th>
+                        </tr>
+                        <tr>
+                            <th>حداقل</th>
+                            <th>حداکثر</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="number" id="grade_min" name="grade_min" value="{{ settings.grade_min }}" step="0.1">
+                                {% if settings.grade_min == 0 %}
+                                    <span class="highlight">مقدار پیش‌فرض ۰</span>
+                                {% else %}
+                                    <span class="highlight">مقدار {{ settings.grade_min|persian_numbers }} ثبت کرده‌اید</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <input type="number" id="grade_max" name="grade_max" value="{{ settings.grade_max }}" step="0.1">
+                                {% if settings.grade_max == 20 %}
+                                    <span class="highlight">مقدار پیش‌فرض ۲۰</span>
+                                {% else %}
+                                    <span class="highlight">مقدار {{ settings.grade_max|persian_numbers }} ثبت کرده‌اید</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="settings-table" style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th colspan="2">موارد انضباطی</th>
+                        </tr>
+                        <tr>
+                            <th>مثبت</th>
+                            <th>منفی</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="number" id="positive_value" name="positive_value" value="{{ settings.positive_value }}" step="0.1">
+                                {% if settings.positive_value == 1 %}
+                                    <span class="highlight">مقدار پیش‌فرض ۱</span>
+                                {% else %}
+                                    <span class="highlight">مقدار {{ settings.positive_value|persian_numbers }} ثبت کرده‌اید</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <input type="number" id="negative_value" name="negative_value" value="{{ settings.negative_value }}" step="0.1">
+                                {% if settings.negative_value == 1 %}
+                                    <span class="highlight">مقدار پیش‌فرض ۱</span>
+                                {% else %}
+                                    <span class="highlight">مقدار {{ settings.negative_value|persian_numbers }} ثبت کرده‌اید</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table class="settings-table" id="activities-table" style="margin-top: 15px;">
+                    <thead>
+                        <tr>
+                            <th colspan="3">فعالیت‌های کلاسی</th>
+                        </tr>
+                        <tr>
+                            <th>نام</th>
+                            <th>نمره</th>
+                            <th>عملیات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities %}
+                        <tr class="activity-row" data-id="{{ activity.id }}">
+                            <td><input type="text" name="activity_name" value="{{ activity.name }}"></td>
+                            <td><input type="number" name="activity_value" value="{{ activity.value }}" step="0.1"></td>
+                            <td><button type="button" class="remove-activity">حذف</button></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <button type="button" id="add-activity" style="margin-top: 10px; padding: 6px 12px; background: #1e90ff; color: white; border: none; border-radius: 6px;">+ فعالیت جدید</button>
+                <div class="settings-buttons">
+                    <button type="submit" class="session-button" data-class-id="{{ class_obj.id }}" data-scope="current">ثبت برای همین کلاس</button>
+                    <button type="submit" class="session-button" data-class-id="{{ class_obj.id }}" data-scope="all">ثبت برای همه کلاس‌ها</button>
+                </div>
+            </form>
+        </div>
+        <div id="message" class="message"></div>
+    </div>
+    <script>
+        function toPersianNumbers(num) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return num.toString().replace(/\d/g, d => persianDigits[parseInt(d)]);
+        }
+
+        function fromPersianNumbers(str) {
+            const persianDigits = {'۰': '0', '۱': '1', '۲': '2', '۳': '3', '۴': '4', '۵': '5', '۶': '6', '۷': '7', '۸': '8', '۹': '9'};
+            return str.replace(/[۰-۹]/g, d => persianDigits[d] || d);
+        }
+
+        function showMessage(text) {
+            $('#message').text(text).fadeIn(400).delay(2000).fadeOut(400);
+        }
+
+        $(document).ready(function() {
+            $('*').css('font-family', 'Vazir, sans-serif');
+            $('.header h1').text(function(i, text) {
+                return text.replace(/\d/g, d => toPersianNumbers(d));
+            });
+
+            $('.tab').on('click', function() {
+                $('.tab').removeClass('active');
+                $(this).addClass('active');
+                $('.tab-content').removeClass('active');
+                $(`#${$(this).data('tab')}`).addClass('active');
+            });
+
+            $('.attendance-cell').on('click', function(e) {
+                e.preventDefault();
+                let $icon = $(this).find('.attendance-icon');
+                let studentId = $(this).closest('tr').data('id');
+                let studentName = $(this).closest('tr').data('name');
+                let isPresent = $icon.data('present') === 'true';
+                let newPresent = !isPresent;
+
+                $icon.removeClass('present absent')
+                     .addClass(newPresent ? 'present' : 'absent')
+                     .text(newPresent ? '✓' : '✗')
+                     .data('present', newPresent);
+
+                let message = newPresent ? `حضور برای ${studentName} ثبت شد` : `غیبت برای ${studentName} ثبت شد`;
+                showMessage(message);
+
+                $.ajax({
+                    url: '{% url "update_attendance" %}',
+                    method: 'POST',
+                    data: {
+                        student_id: studentId,
+                        session_id: '{{ session.id }}',
+                        attendance: newPresent,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (!response.success) {
+                            showMessage('خطا در ثبت حضور و غیاب');
+                        }
+                    },
+                    error: function() {
+                        showMessage('خطا در اتصال به سرور');
+                    }
+                });
+            });
+
+            $('.grade-input').on('input', function() {
+                let grade = fromPersianNumbers($(this).val());
+                if (grade.match(/^-?\d*\.?\d{0,2}$/)) {
+                    $(this).val(toPersianNumbers(grade));
+                } else {
+                    let original = $(this).data('original') || '';
+                    $(this).val(original);
+                }
+            });
+
+            $('.grade-input').on('blur', function() {
+                let student_id = $(this).closest('tr').data('id');
+                let student_name = $(this).closest('tr').data('name');
+                let grade = fromPersianNumbers($(this).val());
+                let original = $(this).data('original') || '';
+                if (grade !== '') {
+                    grade = parseFloat(grade);
+                    if ({{ settings.grade_min }} <= grade && grade <= {{ settings.grade_max }}) {
+                        if (grade.toString() !== original) {
+                            showMessage(`نمره روزانه ${toPersianNumbers(grade)} برای ${student_name} ثبت شد`);
+                            $(this).data('original', grade.toString());
+                            $.ajax({
+                                url: '{% url "update_grade" %}',
+                                method: 'POST',
+                                data: {
+                                    student_id: student_id,
+                                    session_id: '{{ session.id }}',
+                                    daily_grade: grade,
+                                    csrfmiddlewaretoken: '{{ csrf_token }}'
+                                },
+                                error: function() {
+                                    showMessage('خطا در اتصال به سرور');
+                                }
+                            });
+                        }
+                    } else {
+                        $(this).val(original);
+                        showMessage(`نمره باید بین {{ settings.grade_min }} و {{ settings.grade_max }} باشد`);
+                    }
+                } else if (original !== '') {
+                    showMessage(`نمره ${student_name} حذف شد`);
+                    $(this).data('original', '');
+                    $.ajax({
+                        url: '{% url "update_grade" %}',
+                        method: 'POST',
+                        data: {
+                            student_id: student_id,
+                            session_id: '{{ session.id }}',
+                            daily_grade: '',
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        error: function() {
+                            showMessage('خطا در اتصال به سرور');
+                        }
+                    });
+                }
+            });
+
+            $('.discipline-select').on('change', function() {
+                let student_id = $(this).closest('tr').data('id');
+                let student_name = $(this).closest('tr').data('name');
+                let discipline = $(this).val();
+                let original = $(this).data('original');
+                if (discipline !== original) {
+                    let msg = discipline === 'positive' ? 'مثبت' : discipline === 'negative' ? 'منفی' : '-';
+                    showMessage(`مورد انضباطی ${msg} برای ${student_name} ثبت شد`);
+                    $(this).data('original', discipline);
+                    $.ajax({
+                        url: '{% url "update_discipline" %}',
+                        method: 'POST',
+                        data: {
+                            student_id: student_id,
+                            session_id: '{{ session.id }}',
+                            discipline: discipline,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        error: function() {
+                            showMessage('خطا در اتصال به سرور');
+                        }
+                    });
+                }
+            });
+
+            $('.activity-select').on('change', function() {
+                let student_id = $(this).closest('tr').data('id');
+                let student_name = $(this).closest('tr').data('name');
+                let activity_id = $(this).val();
+                let original = $(this).data('original');
+                if (activity_id !== original) {
+                    let activity_name = $(this).find('option:selected').text();
+                    showMessage(`فعالیت '${activity_name}' برای ${student_name} ثبت شد`);
+                    $(this).data('original', activity_id);
+                    $.ajax({
+                        url: '{% url "update_activity" %}',
+                        method: 'POST',
+                        data: {
+                            student_id: student_id,
+                            session_id: '{{ session.id }}',
+                            activity: activity_id,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        error: function() {
+                            showMessage('خطا در اتصال به سرور');
+                        }
+                    });
+                }
+            });
+
+            $('.session-button:not([data-scope])').on('click', function() {
+                let class_id = $(this).data('class-id');
+                let updates = [];
+                $('#student-list tr').each(function() {
+                    let student_id = $(this).data('id');
+                    let attendance = $(this).find('.attendance-icon').data('present') === 'true';
+                    let grade = fromPersianNumbers($(this).find('.grade-input').val());
+                    let discipline = $(this).find('.discipline-select').val();
+                    let activity = $(this).find('.activity-select').val();
+                    updates.push({
+                        student_id: student_id,
+                        attendance: attendance,
+                        daily_grade: grade !== '' ? grade : null,
+                        discipline: discipline,
+                        activity: activity
+                    });
+                });
+
+                $.ajax({
+                    url: '{% url "save_session" %}',
+                    method: 'POST',
+                    data: {
+                        class_id: class_id,
+                        updates: JSON.stringify(updates),
+                        scope: 'current',
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage('جلسه با موفقیت ثبت شد');
+                        } else {
+                            showMessage('خطا در ثبت جلسه');
+                        }
+                    },
+                    error: function() {
+                        showMessage('خطا در اتصال به سرور');
+                    }
+                });
+            });
+
+            $('#add-activity').on('click', function() {
+                let newRow = `
+                    <tr class="activity-row">
+                        <td><input type="text" name="activity_name" value=""></td>
+                        <td><input type="number" name="activity_value" value="0" step="0.1"></td>
+                        <td><button type="button" class="remove-activity">حذف</button></td>
+                    </tr>`;
+                $('#activities-table tbody').append(newRow);
+            });
+
+            $(document).on('click', '.remove-activity', function() {
+                $(this).closest('tr').remove();
+            });
+
+            $('#settings-form').on('submit', function(e) {
+                e.preventDefault();
+                let scope = $(e.originalEvent.submitter).data('scope');
+                let class_id = $(e.originalEvent.submitter).data('class-id');
+                let activities = [];
+                $('#activities-table .activity-row').each(function() {
+                    let name = $(this).find('input[name="activity_name"]').val();
+                    let value = fromPersianNumbers($(this).find('input[name="activity_value"]').val());
+                    if (name || value) {
+                        activities.push({name: name || '', value: value || '0'});
+                    }
+                });
+                let formData = $(this).serialize() + '&scope=' + scope + '&class_id=' + class_id + '&activities=' + encodeURIComponent(JSON.stringify(activities));
+                $.ajax({
+                    url: '{% url "update_settings" %}',
+                    method: 'POST',
+                    data: formData + '&csrfmiddlewaretoken={{ csrf_token }}',
+                    success: function(response) {
+                        if (response.success) {
+                            showMessage(scope === 'current' ? 'تنظیمات برای این کلاس ثبت شد' : 'تنظیمات برای همه کلاس‌ها ثبت شد');
+                            setTimeout(() => location.reload(), 2500);
+                        } else {
+                            showMessage('خطا در ذخیره تنظیمات');
+                        }
+                    },
+                    error: function() {
+                        showMessage('خطا در اتصال به سرور');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

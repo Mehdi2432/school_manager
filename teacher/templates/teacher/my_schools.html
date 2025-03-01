@@ -1,0 +1,329 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>مدرسه‌های من</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #f4f6f9, #e9ecef);
+            min-height: 100vh;
+        }
+        .schools-container {
+            background: white;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 2em auto;
+            text-align: right;
+            position: relative;
+        }
+        .header h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            color: #007bff;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        .back-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+        .year-select select {
+            padding: 0.5em;
+            font-family: 'Vazir', sans-serif;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate; /* جدا کردن برای گرد شدن گوشه‌ها */
+            border-spacing: 0; /* فاصله بین سلول‌ها صفر بمونه */
+            background: white;
+            border-radius: 10px; /* گرد کردن گوشه‌ها */
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1em;
+            overflow: hidden; /* مطمئن شدن که گوشه‌ها تمیز باشن */
+        }
+        th, td {
+            padding: 0.8em;
+            border: 1px solid #ddd;
+            text-align: right;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        th:first-child {
+            border-top-right-radius: 10px; /* گوشه بالا راست */
+        }
+        th:last-child {
+            border-top-left-radius: 10px; /* گوشه بالا چپ */
+        }
+        tr:last-child td:first-child {
+            border-bottom-right-radius: 10px; /* گوشه پایین راست */
+        }
+        tr:last-child td:last-child {
+            border-bottom-left-radius: 10px; /* گوشه پایین چپ */
+        }
+        td input {
+            width: 100%;
+            padding: 0.3em;
+            border: none;
+            background: transparent;
+            font-family: 'Vazir', sans-serif;
+        }
+        td input:disabled {
+            color: #333;
+        }
+        .actions button {
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            margin-left: 0.5em;
+        }
+        .edit {
+            background: #28a745;
+            color: white;
+        }
+        .edit:hover {
+            background: #218838;
+        }
+        .save {
+            background: #007bff;
+            color: white;
+            display: none;
+        }
+        .save:hover {
+            background: #0056b3;
+        }
+        .delete {
+            background: #dc3545;
+            color: white;
+        }
+        .delete:hover {
+            background: #c82333;
+        }
+        .add-form, .add-year-form {
+            margin-top: 1em;
+            background: white;
+            padding: 1em;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .add-form input, .add-form select, .add-year-form input {
+            width: 100%;
+            padding: 0.5em;
+            margin-bottom: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Vazir', sans-serif;
+        }
+        .add-form button, .add-year-form button {
+            background: #007bff;
+            color: white;
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+        }
+        .add-form button:hover, .add-year-form button:hover {
+            background: #0056b3;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="schools-container">
+        <a href="{% url 'teacher_dashboard' %}" class="back-btn"><i class="fas fa-arrow-right"></i> بازگشت به داشبورد</a>
+        <div class="header">
+            <h1>مدرسه‌های من</h1>
+        </div>
+        <div class="top-bar">
+            <div class="year-select">
+                <select id="year-select" onchange="location.href='{% url 'my_schools' %}?year='+this.value">
+                    {% for year in years %}
+                    <option value="{{ year.id }}" {% if year.id == selected_year %}selected{% endif %}>
+                        {{ year.year }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>نام مدرسه</th>
+                    <th>مقطع تحصیلی</th>
+                    <th>آدرس</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody id="school-list">
+                {% for school in schools %}
+                <tr data-id="{{ school.id }}">
+                    <td><input type="text" value="{{ school.name }}" disabled></td>
+                    <td><input type="text" value="{{ school.level }}" disabled></td>
+                    <td><input type="text" value="{{ school.address|default:'-' }}" disabled></td>
+                    <td class="actions">
+                        <button class="edit">ویرایش</button>
+                        <button class="save">ذخیره</button>
+                        <button class="delete">حذف</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-year-form">
+            <form id="add-year-form">
+                <input type="text" name="year" placeholder="سال تحصیلی (مثل 1403-1404)" required>
+                <button type="submit">اضافه کردن سال</button>
+            </form>
+        </div>
+        <div class="add-form">
+            <form id="add-school-form">
+                <input type="hidden" name="year" value="{{ selected_year }}">
+                <input type="text" name="name" placeholder="نام مدرسه" required>
+                <input type="text" name="level" placeholder="مقطع تحصیلی" required>
+                <input type="text" name="address" placeholder="آدرس (اختیاری)">
+                <button type="submit">اضافه کردن</button>
+            </form>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#add-school-form').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '{% url "add_school" %}',
+                    method: 'POST',
+                    data: $(this).serialize() + '&csrfmiddlewaretoken={{ csrf_token }}',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#school-list').append(`
+                                <tr data-id="${response.id}">
+                                    <td><input type="text" value="${response.name}" disabled></td>
+                                    <td><input type="text" value="${response.level}" disabled></td>
+                                    <td><input type="text" value="${response.address || '-'}" disabled></td>
+                                    <td class="actions">
+                                        <button class="edit">ویرایش</button>
+                                        <button class="save" style="display:none;">ذخیره</button>
+                                        <button class="delete">حذف</button>
+                                    </td>
+                                </tr>
+                            `);
+                            $('#add-school-form')[0].reset();
+                        } else {
+                            alert('خطا: ' + response.error);
+                        }
+                    }
+                });
+            });
+
+            $('#add-year-form').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '{% url "add_year" %}',
+                    method: 'POST',
+                    data: $(this).serialize() + '&csrfmiddlewaretoken={{ csrf_token }}',
+                    success: function(response) {
+                        if (response.success) {
+                            $('#year-select').append(`
+                                <option value="${response.id}">${response.year}</option>
+                            `);
+                            $('#year-select').val(response.id);
+                            location.href = '{% url "my_schools" %}?year=' + response.id;
+                        } else {
+                            alert('خطا: ' + response.error);
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit', function() {
+                let row = $(this).closest('tr');
+                row.find('input').prop('disabled', false);
+                $(this).hide();
+                row.find('.save').show();
+            });
+
+            $(document).on('click', '.save', function() {
+                let row = $(this).closest('tr');
+                let id = row.data('id');
+                let name = row.find('input:eq(0)').val();
+                let level = row.find('input:eq(1)').val();
+                let address = row.find('input:eq(2)').val();
+
+                $.ajax({
+                    url: '{% url "edit_school" %}',
+                    method: 'POST',
+                    data: {
+                        id: id,
+                        name: name,
+                        level: level,
+                        address: address,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            row.find('input').prop('disabled', true);
+                            row.find('.save').hide();
+                            row.find('.edit').show();
+                        } else {
+                            alert('خطا: ' + response.error);
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.delete', function() {
+                if (confirm('مطمئن هستید که می‌خواهید این مدرسه را حذف کنید؟')) {
+                    let row = $(this).closest('tr');
+                    let id = row.data('id');
+                    $.ajax({
+                        url: '{% url "delete_school" %}',
+                        method: 'POST',
+                        data: {
+                            id: id,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                row.remove();
+                            } else {
+                                alert('خطا: ' + response.error);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

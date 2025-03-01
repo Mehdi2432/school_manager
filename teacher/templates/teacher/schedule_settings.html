@@ -1,0 +1,380 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>تنظیم برنامه کلاسی</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #f4f6f9, #e9ecef);
+            min-height: 100vh;
+        }
+        .schedule-container {
+            background: white;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 2em auto;
+            text-align: right;
+            position: relative;
+        }
+        .header h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            color: #007bff;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        .back-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2em;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.8em;
+            border: 1px solid #ddd;
+            text-align: right;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        th:first-child {
+            border-top-right-radius: 10px;
+        }
+        th:last-child {
+            border-top-left-radius: 10px;
+        }
+        tr:last-child td:first-child {
+            border-bottom-right-radius: 10px;
+        }
+        tr:last-child td:last-child {
+            border-bottom-left-radius: 10px;
+        }
+        td select {
+            width: 100%;
+            padding: 0.3em;
+            border: none;
+            background: transparent;
+            font-family: 'Vazir', sans-serif;
+        }
+        td select:disabled {
+            color: #333;
+        }
+        .actions button {
+            padding: 0.5em 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            margin-left: 0.5em;
+        }
+        .edit {
+            background: #28a745;
+            color: white;
+        }
+        .edit:hover {
+            background: #218838;
+        }
+        .save {
+            background: #007bff;
+            color: white;
+            display: none;
+        }
+        .save:hover {
+            background: #0056b3;
+        }
+        .delete {
+            background: #dc3545;
+            color: white;
+        }
+        .delete:hover {
+            background: #c82333;
+        }
+        .add-form {
+            padding: 1.5em;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .form-grid {
+            display: flex; /* تغییر به flex برای تراز افقی */
+            justify-content: space-between; /* فاصله یکنواخت بین عناصر */
+            align-items: flex-end; /* تراز کردن پایین‌تر */
+            gap: 1em; /* فاصله بین عناصر */
+        }
+        .form-item {
+            flex: 1; /* همه آیتم‌ها فضای برابر بگیرن */
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 0.5em;
+        }
+        select {
+            width: 100%;
+            padding: 0.6em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Vazir', sans-serif;
+        }
+        button[type="submit"] {
+            padding: 0.6em 1.5em;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            width: 100%;
+        }
+        button[type="submit"]:hover {
+            background: #0056b3;
+        }
+        .message, .error {
+            text-align: center;
+            margin-top: 1em;
+            font-family: 'Vazir', sans-serif;
+        }
+        .message { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="schedule-container">
+        <a href="{% url 'teacher_dashboard' %}" class="back-btn"><i class="fas fa-arrow-right"></i> بازگشت به داشبورد</a>
+        <div class="header">
+            <h1>تنظیم برنامه کلاسی</h1>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>کلاس</th>
+                    <th>روز</th>
+                    <th>زنگ</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody id="schedule-list">
+                {% for schedule in schedules %}
+                <tr data-id="{{ schedule.id }}">
+                    <td>
+                        <select disabled>
+                            <option value="{{ schedule.class_session.id }}" selected>
+                                {{ schedule.class_session.subject }} - {{ schedule.class_session.grade }} - {{ schedule.class_session.name }} ({{ schedule.class_session.school.name }})
+                            </option>
+                            {% for class in classes %}
+                                {% if class.id != schedule.class_session.id %}
+                                <option value="{{ class.id }}">{{ class.subject }} - {{ class.grade }} - {{ class.name }} ({{ class.school.name }})</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select disabled>
+                            <option value="{{ schedule.day }}" selected>{{ schedule.day }}</option>
+                            {% for day in days %}
+                                {% if day != schedule.day %}
+                                <option value="{{ day }}">{{ day }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td>
+                        <select disabled>
+                            <option value="{{ schedule.period }}" selected>زنگ {{ schedule.period|persian_numbers }}</option>
+                            {% for period in periods %}
+                                {% if period != schedule.period %}
+                                <option value="{{ period }}">زنگ {{ period|persian_numbers }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="actions">
+                        <button class="edit">ویرایش</button>
+                        <button class="save">ذخیره</button>
+                        <button class="delete">حذف</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">برنامه‌ای تنظیم نشده است.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-form">
+            <form id="add-schedule-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_schedule">
+                <div class="form-grid">
+                    <div class="form-item">
+                        <label>کلاس</label>
+                        <select name="class" required>
+                            {% for class in classes %}
+                            <option value="{{ class.id }}">{{ class.subject }} - {{ class.grade }} - {{ class.name }} ({{ class.school.name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <label>روز</label>
+                        <select name="day" required>
+                            {% for day in days %}
+                            <option value="{{ day }}">{{ day }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <label>زنگ</label>
+                        <select name="period" required>
+                            {% for period in periods %}
+                            <option value="{{ period }}">زنگ {{ period|persian_numbers }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-item">
+                        <label>&nbsp;</label> <!-- فاصله برای تراز -->
+                        <button type="submit">ثبت برنامه</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="message" class="message"></div>
+        <div id="error" class="error"></div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#add-schedule-form').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '{% url "schedule_settings" %}',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#schedule-list').append(`
+                                <tr data-id="${response.id}">
+                                    <td>
+                                        <select disabled>
+                                            <option value="${response.class_name}" selected>${response.subject} - ${response.grade} - ${response.class_name} (${response.school})</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select disabled>
+                                            <option value="${response.day}" selected>${response.day}</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <select disabled>
+                                            <option value="${response.period}" selected>زنگ ${response.period}</option>
+                                        </select>
+                                    </td>
+                                    <td class="actions">
+                                        <button class="edit">ویرایش</button>
+                                        <button class="save" style="display:none;">ذخیره</button>
+                                        <button class="delete">حذف</button>
+                                    </td>
+                                </tr>
+                            `);
+                            $('#add-schedule-form')[0].reset();
+                            $('#message').text('برنامه با موفقیت اضافه شد').show().fadeOut(3000);
+                        } else {
+                            $('#error').text(response.error).show().fadeOut(3000);
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit', function() {
+                let row = $(this).closest('tr');
+                row.find('select').prop('disabled', false);
+                $(this).hide();
+                row.find('.save').show();
+            });
+
+            $(document).on('click', '.save', function() {
+                let row = $(this).closest('tr');
+                let schedule_id = row.data('id');
+                let class_id = row.find('select:eq(0)').val();
+                let day = row.find('select:eq(1)').val();
+                let period = row.find('select:eq(2)').val();
+
+                $.ajax({
+                    url: '{% url "schedule_settings" %}',
+                    method: 'POST',
+                    data: {
+                        action: 'edit_schedule',
+                        schedule_id: schedule_id,
+                        class: class_id,
+                        day: day,
+                        period: period,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            row.find('select').prop('disabled', true);
+                            row.find('.save').hide();
+                            row.find('.edit').show();
+                            $('#message').text('برنامه با موفقیت ویرایش شد').show().fadeOut(3000);
+                        } else {
+                            $('#error').text(response.error).show().fadeOut(3000);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        $('#error').text('خطایی رخ داد. لطفاً دوباره تلاش کنید.').show().fadeOut(3000);
+                    }
+                });
+            });
+
+            $(document).on('click', '.delete', function() {
+                if (confirm('مطمئن هستید که می‌خواهید این برنامه را حذف کنید؟')) {
+                    let row = $(this).closest('tr');
+                    let schedule_id = row.data('id');
+                    $.ajax({
+                        url: '{% url "schedule_settings" %}',
+                        method: 'POST',
+                        data: {
+                            action: 'delete_schedule',
+                            schedule_id: schedule_id,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                row.remove();
+                                $('#message').text('برنامه با موفقیت حذف شد').show().fadeOut(3000);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

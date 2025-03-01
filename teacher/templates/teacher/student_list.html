@@ -1,0 +1,379 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>دانش‌آموزان - {{ class_obj.name }} - {{ class_obj.subject }} - {{ class_obj.grade }}</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #f4f6f9, #e9ecef);
+            min-height: 100vh;
+        }
+        .students-container {
+            background: white;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 2em auto;
+            text-align: right;
+            position: relative;
+        }
+        .header h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            color: #007bff;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        .back-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2em;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 0.3em;
+            border: 1px solid #ddd;
+            text-align: right;
+        }
+        th {
+            background: #007bff;
+            color: white;
+        }
+        th:first-child {
+            border-top-right-radius: 10px;
+        }
+        th:last-child {
+            border-top-left-radius: 10px;
+        }
+        tr:last-child td:first-child {
+            border-bottom-right-radius: 10px;
+        }
+        tr:last-child td:last-child {
+            border-bottom-left-radius: 10px;
+        }
+        td input, td select, td input[type="text"] {
+            width: 100%;
+            padding: 0.2em;
+            border: none;
+            background: transparent;
+            font-family: 'Vazir', sans-serif;
+        }
+        td input:disabled, td select:disabled {
+            color: #333;
+        }
+        .actions button {
+            padding: 0.3em 0.8em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            margin-left: 0.5em;
+            font-size: 0.9em;
+        }
+        .edit {
+            background: #28a745;
+            color: white;
+        }
+        .edit:hover {
+            background: #218838;
+        }
+        .save {
+            background: #007bff;
+            color: white;
+            display: none;
+        }
+        .save:hover {
+            background: #0056b3;
+        }
+        .delete {
+            background: #dc3545;
+            color: white;
+        }
+        .delete:hover {
+            background: #c82333;
+        }
+        .add-form {
+            padding: 1.5em;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1em;
+        }
+        .form-grid {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 2em;
+        }
+        .form-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 0.5em;
+        }
+        input, select {
+            width: 100%;
+            padding: 0.6em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Vazir', sans-serif;
+        }
+        button[type="submit"] {
+            padding: 0.6em 1.5em;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+            width: 100%;
+        }
+        button[type="submit"]:hover {
+            background: #0056b3;
+        }
+        .file-upload {
+            margin-top: 1em;
+            padding: 1em;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+        .message, .error {
+            text-align: center;
+            margin-top: 1em;
+            font-family: 'Vazir', sans-serif;
+        }
+        .message { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="students-container">
+        <a href="{% url 'my_students' %}" class="back-btn"><i class="fas fa-arrow-right"></i> بازگشت به کلاس‌ها</a>
+        <div class="header">
+            <h1>دانش‌آموزان - {{ class_obj.name }} - {{ class_obj.subject }} - {{ class_obj.grade }}</h1>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>نام خانوادگی</th>
+                    <th>نام</th>
+                    <th>والدین</th>
+                    <th>نام کاربری</th>
+                    <th>عملیات</th>
+                </tr>
+            </thead>
+            <tbody id="student-list">
+                {% for student in students %}
+                <tr data-id="{{ student.id }}">
+                    <td><input type="text" value="{{ student.name.split|last }}" disabled></td>
+                    <td><input type="text" value="{{ student.name.split|first }}" disabled></td>
+                    <td><input type="text" value="{{ student.parent.user.username|default:'-' }}" disabled></td>
+                    <td><input type="text" value="{{ student.student_user.user.username|default:'-' }}" disabled></td>
+                    <td class="actions">
+                        <button class="edit">ویرایش</button>
+                        <button class="save">ذخیره</button>
+                        <button class="delete">حذف</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5">دانش‌آموزی ثبت نشده است.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="add-form">
+            <form id="add-student-form" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_student">
+                <div class="form-grid">
+                    <div class="form-item">
+                        <label>نام</label>
+                        <input type="text" name="first_name" required>
+                    </div>
+                    <div class="form-item">
+                        <label>نام خانوادگی</label>
+                        <input type="text" name="last_name" required>
+                    </div>
+                    <div class="form-item">
+                        <label>والدین (اختیاری)</label>
+                        <input type="text" name="parent_username" placeholder="نام کاربری والد">
+                    </div>
+                    <div class="form-item">
+                        <label>نام کاربری (اختیاری)</label>
+                        <input type="text" name="student_username" placeholder="نام کاربری دانش‌آموز">
+                    </div>
+                    <div class="form-item">
+                        <label> </label>
+                        <button type="submit">ثبت دانش‌آموز</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="file-upload">
+            <form id="upload-student-form" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_students_file">
+                <div class="form-grid">
+                    <div class="form-item">
+                        <label>بارگذاری فایل اکسل</label>
+                        <input type="file" name="file" accept=".xlsx" required>
+                    </div>
+                    <div class="form-item">
+                        <label> </label>
+                        <button type="submit">بارگذاری</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div id="message" class="message"></div>
+        <div id="error" class="error"></div>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#add-student-form').on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    url: '{% url "student_list" class_obj.id %}',
+                    method: 'POST',
+                    data: $(this).serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            $('#student-list').append(`
+                                <tr data-id="${response.id}">
+                                    <td><input type="text" value="${response.last_name}" disabled></td>
+                                    <td><input type="text" value="${response.first_name}" disabled></td>
+                                    <td><input type="text" value="${response.parent_username || '-'}" disabled></td>
+                                    <td><input type="text" value="${response.student_username || '-'}" disabled></td>
+                                    <td class="actions">
+                                        <button class="edit">ویرایش</button>
+                                        <button class="save" style="display:none;">ذخیره</button>
+                                        <button class="delete">حذف</button>
+                                    </td>
+                                </tr>
+                            `);
+                            $('#add-student-form')[0].reset();
+                            $('#message').text('دانش‌آموز با موفقیت اضافه شد').show().fadeOut(3000);
+                        } else {
+                            $('#error').text(response.error).show().fadeOut(3000);
+                        }
+                    }
+                });
+            });
+
+            $('#upload-student-form').on('submit', function(e) {
+                e.preventDefault();
+                let formData = new FormData(this);
+                $.ajax({
+                    url: '{% url "student_list" class_obj.id %}',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            location.reload();
+                            $('#message').text(response.message).show().fadeOut(3000);
+                        } else {
+                            $('#error').text(response.error).show().fadeOut(3000);
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.edit', function() {
+                let row = $(this).closest('tr');
+                row.find('input').prop('disabled', false);
+                $(this).hide();
+                row.find('.save').show();
+            });
+
+            $(document).on('click', '.save', function() {
+                let row = $(this).closest('tr');
+                let student_id = row.data('id');
+                let last_name = row.find('input:eq(0)').val();
+                let first_name = row.find('input:eq(1)').val();
+                let parent_username = row.find('input:eq(2)').val();
+                let student_username = row.find('input:eq(3)').val();
+                let name = `${first_name} ${last_name}`;
+
+                $.ajax({
+                    url: '{% url "student_list" class_obj.id %}',
+                    method: 'POST',
+                    data: {
+                        action: 'edit_student',
+                        student_id: student_id,
+                        name: name,
+                        grade: '{{ class_obj.grade }}',
+                        parent_username: parent_username,
+                        student_username: student_username,
+                        csrfmiddlewaretoken: '{{ csrf_token }}'
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            row.find('input').prop('disabled', true);
+                            row.find('.save').hide();
+                            row.find('.edit').show();
+                            $('#message').text('دانش‌آموز با موفقیت ویرایش شد').show().fadeOut(3000);
+                        } else {
+                            $('#error').text(response.error).show().fadeOut(3000);
+                        }
+                    }
+                });
+            });
+
+            $(document).on('click', '.delete', function() {
+                if (confirm('مطمئن هستید که می‌خواهید این دانش‌آموز را حذف کنید؟')) {
+                    let row = $(this).closest('tr');
+                    let student_id = row.data('id');
+                    $.ajax({
+                        url: '{% url "student_list" class_obj.id %}',
+                        method: 'POST',
+                        data: {
+                            action: 'delete_student',
+                            student_id: student_id,
+                            csrfmiddlewaretoken: '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                row.remove();
+                                $('#message').text('دانش‌آموز با موفقیت حذف شد').show().fadeOut(3000);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

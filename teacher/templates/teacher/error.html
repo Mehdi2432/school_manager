@@ -1,0 +1,38 @@
+<!-- school_manager/teacher/templates/teacher/error.html -->
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>خطا</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+            text-align: right;
+        }
+        .error-container {
+            background: white;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        h1 {
+            color: #e74c3c;
+        }
+    </style>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+</head>
+<body>
+    <div class="error-container">
+        <h1>خطا</h1>
+        <p>{{ message }}</p>
+        <a href="{% url 'teacher_login' %}">بازگشت به ورود</a>
+    </div>
+</body>
+</html>

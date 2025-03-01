@@ -1,0 +1,29 @@
+<!-- school_manager/teacher/templates/teacher/class_detail.html -->
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>جزئیات کلاس</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            background-color: #f4f6f9;
+            padding: 20px;
+            text-align: right;
+        }
+    </style>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+</head>
+<body>
+    <h1>کلاس: {{ class.subject }} - {{ class.grade }} - {{ class.name }}</h1>
+    <p>مدرسه: {{ class.school.name }}</p>
+    <h2>دانش‌آموزان:</h2>
+    <ul>
+        {% for student in class.students.all %}
+        <li>{{ student.name }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

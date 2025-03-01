@@ -1,0 +1,252 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>پروفایل</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #f4f6f9, #e9ecef);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: auto;
+        }
+        .profile-container {
+            background: white;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            text-align: right;
+            animation: fadeIn 0.5s ease-in-out;
+            position: relative;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        .header h1 {
+            color: #007bff;
+            font-size: 2em;
+            margin: 0;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            color: #007bff;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        .back-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 1.5em;
+            border-bottom: 2px solid #ddd;
+        }
+        .tab {
+            padding: 0.8em 1.5em;
+            cursor: pointer;
+            color: #666;
+            font-weight: bold;
+            transition: color 0.3s, border-bottom 0.3s;
+        }
+        .tab.active {
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .card {
+            background: #fff;
+            padding: 1.5em;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1em;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5em; /* فاصله بیشتر */
+        }
+        .full-width {
+            grid-column: span 2;
+            margin-bottom: 1em;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #333;
+            font-weight: bold;
+            font-family: 'Vazir', sans-serif;
+        }
+        input, select {
+            width: 85%; /* کوچکتر کردن کادرها */
+            padding: 0.6em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            transition: border 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        input[disabled] {
+            background: #e9ecef;
+            color: #666;
+        }
+        button {
+            padding: 0.8em 1.5em;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .license-info {
+            margin-bottom: 1em;
+            color: #666;
+            font-family: 'Vazir', sans-serif;
+        }
+        .message, .error {
+            text-align: center;
+            margin-top: 1em;
+            font-size: 0.9em;
+            font-family: 'Vazir', sans-serif;
+        }
+        .message { color: #28a745; }
+        .error { color: #dc3545; }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script>
+        function openTab(tabName) {
+            var i, tabcontent, tabs;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tabs = document.getElementsByClassName("tab");
+            for (i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            event.currentTarget.classList.add("active");
+        }
+    </script>
+</head>
+<body>
+    <div class="profile-container">
+        <a href="{% url 'teacher_dashboard' %}" class="back-btn"><i class="fas fa-arrow-right"></i> بازگشت به داشبورد</a>
+        <div class="header">
+            <h1>پروفایل</h1>
+        </div>
+        <div class="tabs">
+            <div class="tab active" onclick="openTab('personal')">اطلاعات شخصی</div>
+            <div class="tab" onclick="openTab('password')">تغییر رمز</div>
+            <div class="tab" onclick="openTab('license')">لایسنس‌ها</div>
+        </div>
+        <div id="personal" class="tab-content active">
+            <div class="card">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_profile">
+                    <div class="form-grid">
+                        <div>
+                            <label for="first_name">نام</label>
+                            <input type="text" id="first_name" name="first_name" value="{{ user.first_name|persian_numbers }}" required>
+                        </div>
+                        <div>
+                            <label for="last_name">نام خانوادگی</label>
+                            <input type="text" id="last_name" name="last_name" value="{{ user.last_name|persian_numbers }}">
+                        </div>
+                        <div class="full-width">
+                            <label for="username">نام کاربری</label>
+                            <input type="text" id="username" value="{{ user.username|persian_numbers }}" disabled>
+                        </div>
+                    </div>
+                    <button type="submit">ثبت</button>
+                </form>
+            </div>
+        </div>
+        <div id="password" class="tab-content">
+            <div class="card">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="change_password">
+                    <div class="form-grid">
+                        <div>
+                            <label for="password">تغییر رمز عبور</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        <div>
+                            <label for="password_confirm">تکرار رمز عبور</label>
+                            <input type="password" id="password_confirm" name="password_confirm" required>
+                        </div>
+                        <div class="full-width">
+                            <button type="submit">ثبت</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="license" class="tab-content">
+            <div class="card">
+                <div class="license-info">
+                    <p>مدت زمان باقی‌مانده: {% if days_left > 0 %}{{ days_left|persian_numbers }} روز{% elif days_left == 0 %}امروز{% else %}منقضی شده{% endif %}</p>
+                </div>
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="upload_license">
+                    <div class="form-grid">
+                        <div class="full-width">
+                            <label for="license_file">بارگذاری لایسنس</label>
+                            <input type="file" id="license_file" name="license_file">
+                        </div>
+                        <div class="full-width">
+                            <button type="submit">ثبت لایسنس</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% if message %}
+        <div class="message">{{ message }}</div>
+        {% endif %}
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>

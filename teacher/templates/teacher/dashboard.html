@@ -1,0 +1,229 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>میز کار معلم</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background-color: #f4f6f9;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(45deg, #007bff, #00c4ff);
+            color: white;
+            padding: 1.5em;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            flex: 1;
+            text-align: center;
+        }
+        .header .actions-left, .header .actions-right {
+            display: flex;
+            gap: 1em;
+            width: 150px;
+        }
+        .header .actions-left {
+            justify-content: flex-start;
+        }
+        .header .actions-right {
+            justify-content: flex-end;
+        }
+        .header a {
+            color: white;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border-radius: 5px;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+        .header a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 2em 1em;
+            position: fixed;
+            top: 80px;
+            bottom: 0;
+            right: 0;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            overflow-y: auto; /* اضافه کردن اسکرول عمودی */
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar li {
+            margin: 1.5em 0;
+        }
+        .sidebar a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 0.8em;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+        .sidebar a:hover {
+            background-color: #34495e;
+            transform: translateX(-5px);
+        }
+        .sidebar i {
+            margin-left: 10px;
+            font-size: 1.2em;
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            margin-right: 250px;
+            text-align: right;
+        }
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1000px;
+            margin: 0 auto 1em auto;
+            font-size: 1.2em;
+            font-family: 'Vazir', sans-serif;
+        }
+        .table-header .title {
+            order: 0;
+            text-align: right;
+        }
+        .table-header .date {
+            order: 1;
+            text-align: left;
+        }
+        .table-container {
+            background: white;
+            padding: 1em;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9em;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        td {
+            background-color: #fff;
+            transition: background 0.3s;
+        }
+        td a {
+            color: #007bff;
+            text-decoration: none;
+            display: block;
+        }
+        td a:hover {
+            color: #0056b3;
+            background-color: #f0f8ff;
+        }
+        .class-info {
+            line-height: 1.4;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="header">
+        <div class="actions-left">
+            <a href="{% url 'teacher_profile' %}"><i class="fas fa-user-circle"></i> پروفایل</a>
+        </div>
+        <h1>میز کار معلم: {{ teacher_name }}</h1>
+        <div class="actions-right">
+            <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> خروج</a>
+        </div>
+    </div>
+    <div class="container">
+        <div class="sidebar">
+            <ul>
+                <li><a href="{% url 'my_schools' %}"><i class="fas fa-school"></i> مدرسه‌های من</a></li>
+                <li><a href="{% url 'my_classes' %}"><i class="fas fa-chalkboard"></i> کلاس‌های من</a></li>
+                <li><a href="{% url 'my_students' %}"><i class="fas fa-users"></i> دانش‌آموزان من</a></li>
+                <li><a href="{% url 'schedule_settings' %}"><i class="fas fa-calendar-alt"></i> تنظیم برنامه کلاسی</a></li>
+                <li><a href="#"><i class="fas fa-laptop-code"></i> سامانه آموزشی برخط</a></li>
+                <li><a href="#"><i class="fas fa-envelope"></i> صندوق پیام</a></li>
+                <li><a href="#"><i class="fas fa-headset"></i> ارتباط با پشتیبانی</a></li>
+            </ul>
+        </div>
+        <div class="content">
+            <div class="table-header">
+                <span class="title">برنامه کلاسی</span>
+                <span class="date">تاریخ: {{ today|persian_numbers }}</span>
+            </div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th></th> <!-- ستون خالی برای روزها -->
+                            {% for period in periods %}
+                            <th>زنگ {{ period|persian_numbers }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for day in days %}
+                        <tr>
+                            <th>{{ day }}</th>
+                            {% for period in periods %}
+                            <td>
+                                {% with class=schedules|get_item:day|get_item:period %}
+                                {% if class %}
+                                <a href="{% url 'class_management' class.id %}" class="class-info">
+                                    {{ class.subject }}<br>
+                                    {{ class.grade }} - {{ class.name|persian_numbers }}<br>
+                                    ({{ class.school.name }})
+                                </a>
+                                {% endif %}
+                                {% endwith %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

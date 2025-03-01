@@ -1,0 +1,123 @@
+{% load static %}
+{% load teacher_tags %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>دانش‌آموزان من</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #f4f6f9, #e9ecef);
+            min-height: 100vh;
+        }
+        .students-container {
+            background: white;
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 2em auto;
+            text-align: right;
+            position: relative;
+        }
+        .header h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 1.5em;
+        }
+        .back-btn {
+            position: absolute;
+            top: 1em;
+            right: 1em;
+            color: #007bff;
+            text-decoration: none;
+            padding: 0.5em 1em;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'Vazir', sans-serif;
+        }
+        .back-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        .school-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 10px;
+            margin-bottom: 2em;
+        }
+        .school-header {
+            background: #007bff;
+            color: white;
+            padding: 1em;
+            border-radius: 10px; /* زاویه‌های بالا و پایین گرد */
+            text-align: center;
+            margin-bottom: 10px;
+            width: calc(94.5%);
+            max-width: 100%;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .school-table td {
+            background: white;
+            padding: 1em;
+            border: 1px solid #ddd;
+            text-align: center;
+            border-radius: 5px;
+            transition: background 0.3s;
+            width: 30%;
+        }
+        .school-table td a {
+            color: #007bff;
+            text-decoration: none;
+            display: block;
+        }
+        .school-table td a:hover {
+            color: #0056b3;
+            background: #f0f8ff;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div class="students-container">
+        <a href="{% url 'teacher_dashboard' %}" class="back-btn"><i class="fas fa-arrow-right"></i> بازگشت به داشبورد</a>
+        <div class="header">
+            <h1>دانش‌آموزان من</h1>
+        </div>
+        {% for school in schools %}
+        <div class="school-header">مدرسه {{ school.name }}</div>
+        <table class="school-table">
+            <tbody>
+                {% for class in classes_by_school|get_item:school %}
+                    {% if forloop.counter0|divisibleby:3 %}
+                        </tr><tr>
+                    {% endif %}
+                    {% if forloop.first %}
+                        <tr>
+                    {% endif %}
+                    <td>
+                        <a href="{% url 'student_list' class.id %}">{{ class.name }} - {{ class.subject }} - {{ class.grade }}</a>
+                    </td>
+                    {% if forloop.last %}
+                        </tr>
+                    {% endif %}
+                {% empty %}
+                    <tr>
+                        <td>کلاسی تعریف نشده است.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% empty %}
+        <p>مدرسه‌ای تعریف نشده است.</p>
+        {% endfor %}
+    </div>
+</body>
+</html>

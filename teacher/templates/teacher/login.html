@@ -1,0 +1,146 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <title>سامانه مدیریت آموزشی مدرسه آسا</title>
+    <style>
+        body {
+            direction: rtl;
+            font-family: 'Vazir', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #007bff, #00c4ff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('{% static "teacher/images/classroom-background.jpg" %}') no-repeat center center;
+            background-size: cover;
+            filter: blur(10px);
+            z-index: -1;
+            opacity: 0.7;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2em;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            text-align: right;
+            position: relative;
+            z-index: 1;
+            margin: 2em 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2em;
+        }
+        .header h1 {
+            color: #007bff;
+            font-size: 1.8em;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        .login-form label {
+            display: block;
+            margin-bottom: 0.5em;
+            color: #333;
+        }
+        .login-form input, .login-form select {
+            width: 100%;
+            padding: 0.8em;
+            margin-bottom: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Vazir', sans-serif;
+        }
+        .buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .login-form button, .login-form a.button {
+            width: 50%;
+            padding: 0.8em 0;
+            background-color: #007bff;
+            color: white;
+            border: 2px solid #007bff;
+            border-radius: 5px;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+            font-family: 'Vazir', sans-serif;
+            font-size: 0.9em;
+            box-sizing: border-box;
+        }
+        .login-form button:hover, .login-form a.button:hover {
+            background-color: transparent;
+            color: #007bff;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-bottom: 1em;
+        }
+        .footer {
+            position: fixed;
+            bottom: -8px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            color: #fff;
+            font-size: 0.9em;
+            z-index: 2;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            padding: 0;
+            background: rgba(0, 0, 0, 0.0);
+            border-radius: 3px;
+            width: fit-content;
+            margin: 0 auto;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'teacher/fonts/vazir.css' %}">
+</head>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <h1>سامانه مدیریت آموزشی مدرسه آسا</h1>
+        </div>
+        <form class="login-form" method="post">
+            {% csrf_token %}
+            <label for="username">نام کاربری:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">رمز عبور:</label>
+            <input type="password" id="password" name="password" required>
+            <label for="role">نقش:</label>
+            <select id="role" name="role" required>
+                <option value="teacher" {% if default_role == "teacher" %}selected{% endif %}>معلم</option>
+                <option value="school" {% if default_role == "school" %}selected{% endif %}>مدرسه</option>
+                <option value="parent" {% if default_role == "parent" %}selected{% endif %}>والدین</option>
+                <option value="student" {% if default_role == "student" %}selected{% endif %}>دانش‌آموز</option>
+            </select>
+            <div class="buttons">
+                <button type="submit">ورود</button>
+                <a href="{% url 'register' %}" class="button">ثبت‌نام</a>
+            </div>
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
+        </form>
+    </div>
+    <div class="footer">
+        <p>تمامی حقوق برای شرکت ایمن آسا محفوظ است © ۱۴۰۳</p>
+    </div>
+</body>
+</html>
